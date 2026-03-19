@@ -53,7 +53,20 @@ features_path = os.path.join(
     "features.pkl"
 )
 
-selected_features = joblib.load(features_path)
+try:
+    selected_features = joblib.load(features_path)
+except:
+    print("Using fallback features")
+    selected_features = [
+        "campaign", "pdays", "previous",
+        "job_blue-collar", "job_retired", "job_student",
+        "marital_single", "education_tertiary",
+        "housing_yes", "loan_yes",
+        "contact_unknown",
+        "month_dec", "month_mar", "month_may",
+        "month_oct", "month_sep",
+        "poutcome_success", "poutcome_unknown"
+    ]
 
 # ----------------------------------------
 # DATABASE FUNCTION

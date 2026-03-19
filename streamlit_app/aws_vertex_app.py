@@ -9,7 +9,10 @@ import vertexai
 import boto3
 import os
 
-IS_CLOUD = os.getenv("STREAMLIT_SERVER_HEADLESS") == "true"
+
+IS_CLOUD = "STREAMLIT_SERVER_ENABLED" in os.environ
+IS_PROD = not IS_CLOUD
+
 
 from dotenv import load_dotenv
 
@@ -424,7 +427,7 @@ User question:
         # -----------------------------
         # FIRST CALL — Ask LLM
         # -----------------------------
-        if not IS_CLOUD:
+        if IS_PROD:
             try:
                 response = agent_model.generate_content(prompt)
                 answer = response.text
@@ -452,7 +455,7 @@ User question:
         # -----------------------------
         # TOOL CALL HANDLING (LOCAL ONLY)
         # -----------------------------
-        if not IS_CLOUD and fn_call is not None:
+        if IS_PROD and fn_call is not None:
 
             fn = fn_call.name
 
@@ -518,3 +521,4 @@ Data:
                     st.write("No response generated.")
             else:
                 st.write(answer)
+

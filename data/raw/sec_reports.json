@@ -1,0 +1,14 @@
+[
+ {
+  "quarter": "2024 Q1",
+  "revenue": 21000000,
+  "net_income": 5200000,
+  "operating_expenses": 15800000
+ },
+ {
+  "quarter": "2024 Q2",
+  "revenue": 23000000,
+  "net_income": 6000000,
+  "operating_expenses": 17000000
+ }
+]

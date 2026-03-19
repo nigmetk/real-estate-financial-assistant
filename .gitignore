@@ -1,0 +1,22 @@
+models/
+*.pkl
+
+# Python
+__pycache__/
+*.pyc
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Virtual env
+clean_env/
+venv/
+.env/
+
+# Models (opsiyonel - büyükse)
+models/*.pkl
+models/*.joblib
+
+# OS
+.DS_Store
+Thumbs.db

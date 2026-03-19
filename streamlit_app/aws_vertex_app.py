@@ -430,9 +430,7 @@ User question:
 
         st.write(answer)
 
-        # Extract function call (if any)
-        part = response.candidates[0].content.parts[0]
-        fn_call = getattr(part, "function_call", None)
+       
 
         # -----------------------------
         # TOOL CALL HANDLING

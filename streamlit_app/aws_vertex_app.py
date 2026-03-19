@@ -440,128 +440,94 @@ User question:
                 answer = "Error generating response from Vertex AI."
 
         # -----------------------------
-        # DEMO MODE (SMART AI WITH FAKE DATA)
+        # DEMO MODE (CLOUD SAFE ✅)
         # -----------------------------
         else:
-            demo_context = """
-You are running in DEMO MODE as a financial real estate assistant.
+            q = question.lower()
 
-Use the following sample data:
+            # NET INCOME
+            if "net income" in q or "last quarter" in q:
+                answer = "The net income reported last quarter was approximately $450,000."
 
-Chicago Industrial Properties:
-- 123 Main St — Revenue: $1.2M, Net Income: $450k
-- 12 Warehouse Ln — Revenue: $1.8M, Net Income: $610k
-
-SEC Financials:
-- Last Quarter Net Income: $450,000
-- Revenue Growth: 8%
-
-Press Releases:
-- Recent acquisition of logistics facility
-- Expansion into Midwest market
-
-Answer naturally, professionally, and helpfully.
-"""
-
-            demo_prompt = f"""
-{demo_context}
-
-User question:
-{question}
-"""
-
-            try:
-                response = agent_model.generate_content(demo_prompt)
-                if response and response.candidates:
-                    part = response.candidates[0].content.parts[0]
-                    if hasattr(part, "text"):
-                        answer = part.text
-            except:
+            # CHICAGO INDUSTRIAL
+            elif "chicago" in q or "industrial" in q or "revenue" in q:
                 answer = (
-                    "Demo Mode: Sample Chicago industrial portfolio generates "
-                    "$1M–$2M revenue per property with steady growth and recent expansion activity."
+                    "Here are industrial properties in the Chicago region:\n"
+                    "- 123 Main St — Revenue: $1.2M, Net Income: $450k\n"
+                    "- 12 Warehouse Ln — Revenue: $1.8M, Net Income: $610k"
+                )
+
+            # PRESS / ACQUISITION
+            elif "acquisition" in q or "press" in q or "announcement" in q:
+                answer = (
+                    "Yes, the company recently announced an acquisition of a logistics "
+                    "facility to expand its industrial portfolio."
+                )
+
+            # DEFAULT
+            else:
+                answer = (
+                    "This is a demo AI assistant. You can ask about financials, "
+                    "Chicago properties, or company announcements."
                 )
 
         # -----------------------------
-        # SHOW INITIAL ANSWER
+        # SHOW ANSWER
         # -----------------------------
+        st.subheader("AI Response")
         st.write(answer)
 
         # -----------------------------
-        # FUNCTION CALL EXTRACTION (SAFE)
+        # TOOL CALL HANDLING (ONLY PROD)
         # -----------------------------
-        fn_call = None
-        if response and hasattr(response, "candidates"):
+        if IS_PROD and response:
+
+            fn_call = None
             try:
                 part = response.candidates[0].content.parts[0]
                 fn_call = getattr(part, "function_call", None)
             except:
                 fn_call = None
 
-        # -----------------------------
-        # TOOL CALL HANDLING (ONLY PROD)
-        # -----------------------------
-        if IS_PROD and fn_call is not None:
+            if fn_call is not None:
 
-            fn = fn_call.name
+                fn = fn_call.name
 
-            # Execute tool
-            if fn == "chicago_industrial_revenue_tool":
-                tool_result = chicago_industrial_revenue_tool()
-            elif fn == "press_releases_tool":
-                tool_result = press_releases_tool()
-            elif fn == "sec_reports_tool":
-                tool_result = sec_reports_tool()
-            else:
-                tool_result = {"error": "Unknown tool called"}
+                # Execute tool
+                if fn == "chicago_industrial_revenue_tool":
+                    tool_result = chicago_industrial_revenue_tool()
+                elif fn == "press_releases_tool":
+                    tool_result = press_releases_tool()
+                elif fn == "sec_reports_tool":
+                    tool_result = sec_reports_tool()
+                else:
+                    tool_result = {"error": "Unknown tool called"}
 
-            wrapped_result = {"data": tool_result}
+                wrapped_result = {"data": tool_result}
 
-            # -----------------------------
-            # SECOND CALL (LLM + TOOL RESULT)
-            # -----------------------------
-            try:
-                followup = agent_model.generate_content(
-                    contents=[
-                        {"role": "user", "parts": [{"text": prompt}]},
-                        {
-                            "role": "tool",
-                            "parts": [
-                                {
-                                    "function_response": {
-                                        "name": fn,
-                                        "response": wrapped_result
+                try:
+                    followup = agent_model.generate_content(
+                        contents=[
+                            {"role": "user", "parts": [{"text": prompt}]},
+                            {
+                                "role": "tool",
+                                "parts": [
+                                    {
+                                        "function_response": {
+                                            "name": fn,
+                                            "response": wrapped_result
+                                        }
                                     }
-                                }
-                            ]
-                        }
-                    ]
-                )
+                                ]
+                            }
+                        ]
+                    )
 
-                st.subheader("AI Response")
+                    if followup and followup.candidates:
+                        final_part = followup.candidates[0].content.parts[0]
 
-                if followup and followup.candidates:
-                    final_part = followup.candidates[0].content.parts[0]
+                        if hasattr(final_part, "text"):
+                            st.write(final_part.text)
 
-                    if hasattr(final_part, "text"):
-                        st.write(final_part.text)
-                    else:
-                        # fallback explanation
-                        summary_prompt = f"""
-Explain the following financial real estate data clearly for a business user.
-
-Data:
-{wrapped_result}
-"""
-                        final_response = agent_model.generate_content(summary_prompt)
-                        st.write(final_response.text)
-
-            except Exception as e:
-                st.error(f"Tool processing error: {e}")
-
-        else:
-            # -----------------------------
-            # NO TOOL CALL (DEMO or DIRECT)
-            # -----------------------------
-            st.subheader("AI Response")
-            st.write(answer)
+                except Exception as e:
+                    st.error(f"Tool processing error: {e}")

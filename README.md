@@ -1,151 +1,202 @@
-# 🏠 AI Financial Assistant Web Application
+🏠 AI Financial Assistant Web Application
 
-An end-to-end **AI-powered real estate analytics platform** that integrates machine learning, cloud services, and a multi-source data system into a single intelligent web application.
+An end-to-end AI-powered real estate analytics platform that integrates machine learning, cloud services, and multi-source data into a single intelligent web application.
 
----
-
-## 🚀 Overview
+🚀 Overview
 
 This application provides a unified interface to:
 
-* 📈 Predict house prices (Regression – AWS SageMaker)
-* ⚠️ Predict customer subscription (Classification – AWS SageMaker)
-* 🏢 Query real estate financial data (PostgreSQL)
-* 📰 Analyze company press releases (JSON dataset)
-* 🤖 Interact with an AI-powered financial assistant (Vertex AI)
+📈 Predict house prices (Regression – AWS SageMaker)
 
----
+⚠️ Predict customer subscription (Classification – AWS SageMaker)
 
-## ☁️ Multi-Cloud Architecture
+🏢 Query real estate financial data (PostgreSQL)
 
-* **AWS SageMaker** → Model deployment (Regression & Classification)
-* **Google Vertex AI** → Conversational AI agent
+📰 Analyze company press releases (JSON dataset)
 
-This project demonstrates real-world **multi-cloud integration**.
+🤖 Interact with an AI-powered financial assistant (Vertex AI)
 
----
+☁️ Multi-Cloud Architecture
 
-## 🤖 AI Agent System
+This project demonstrates real-world multi-cloud system design:
 
-The chatbot is implemented using a **tool-based agent architecture**:
+AWS SageMaker → Deployment of regression and classification models
 
-* Interprets user queries
-* Dynamically selects data sources:
+Google Vertex AI → Conversational AI agent (LLM-powered chatbot)
 
-  * PostgreSQL (property & financial data)
-  * SEC reports (JSON)
-  * Press releases (JSON)
-* Executes tool calls
-* Returns natural language responses
+🤖 AI Agent System
 
-Includes **routing logic** to guide tool selection.
+The chatbot is implemented using a tool-based agent architecture.
 
----
+Capabilities:
 
-## 🧮 Machine Learning Models
+Interprets natural language queries
 
-### Regression
+Dynamically selects appropriate data sources:
 
-* Random Forest (California Housing dataset)
-* Metrics: RMSE, MAE, R²
+PostgreSQL (structured financial & property data)
 
-### Classification
+SEC financial reports (JSON)
 
-* Logistic Regression (Bank Marketing dataset)
-* Metrics: Accuracy, Precision, Recall, F1 Score
+Press releases (JSON)
 
-Both models are deployed on **AWS SageMaker endpoints**.
+Executes tool calls
 
----
+Generates natural language responses via Vertex AI
 
-## 🗄️ Database
+Intelligence Layer:
 
-PostgreSQL with two tables:
+Query routing logic
 
-* **Properties** → location, type, size
-* **Financials** → revenue, net income, expenses
+Multi-source response generation
 
----
+Context-aware answers
 
-## ⚠️ Database Handling
+🧮 Machine Learning Models
+🔹 Regression Model
+
+Model: Random Forest Regressor
+
+Dataset: California Housing (scikit-learn)
+
+Metrics:
+
+RMSE
+
+MAE
+
+R² Score
+
+🔹 Classification Model
+
+Model: Logistic Regression
+
+Dataset: Bank Marketing (UCI)
+
+Metrics:
+
+Accuracy
+
+Precision
+
+Recall
+
+F1 Score
+
+Confusion Matrix
+
+🚀 Deployment
+
+Both models are deployed as AWS SageMaker endpoints and integrated into the Streamlit application for real-time predictions.
+
+🗄️ Database
+
+PostgreSQL database with two tables:
+
+Properties
+
+property_id (PK)
+
+address
+
+metro_area
+
+sq_footage
+
+property_type
+
+Financials
+
+property_id (FK)
+
+revenue
+
+net_income
+
+expenses
+
+⚠️ Database Handling
 
 The application connects to a local PostgreSQL database.
 
-If the database is unavailable, the system **automatically falls back to sample data**, ensuring the application always runs successfully.
+If unavailable, the system automatically falls back to sample/mock data, ensuring uninterrupted execution.
 
----
+📂 Data Sources
 
-## ⚙️ Tech Stack
+The system integrates three primary data sources:
 
-* Python, Streamlit
-* Pandas, NumPy, Scikit-learn
-* PostgreSQL (psycopg2)
+SEC Financial Reports (JSON)
 
-Cloud:
+PostgreSQL Database (structured data)
 
-* AWS SageMaker (model hosting)
-* Google Vertex AI (LLM agent)
+Press Releases (JSON)
 
----
+⚙️ Tech Stack
+Core
 
-## ▶️ Run Locally
+Python
 
-```bash
+Streamlit
+
+Pandas, NumPy, Scikit-learn
+
+Database
+
+PostgreSQL (psycopg2)
+
+Cloud
+
+AWS SageMaker (ML deployment)
+
+Google Vertex AI (LLM / AI Agent)
+
+▶️ Run Locally
 pip install -r requirements.txt
 streamlit run streamlit_app/aws_vertex_app.py
-```
+🔐 Environment Variables
 
-### 🔐 Environment Variables
+Create a .env file in the root directory:
 
-Create a `.env` file in the root directory:
-
-```bash
 DB_PASSWORD=your_password_here
-```
-
----
-
-## 📂 Project Structure
-
-```
-real-estate-financial-assistant
-├── data/
-├── models/
-├── notebooks/
-├── sql/
-├── src/
-├── streamlit_app/
+📂 Project Structure
+real-estate-financial-assistant/
+├── data/                      # Raw and processed datasets
+├── inference/                 # SageMaker inference scripts
+│   ├── regression_inference.py
+│   └── classification_inference.py
+├── models/                    # Placeholder (models deployed in SageMaker)
+│   └── README.md
+├── notebooks/                 # EDA and model training
+├── sql/                       # Database schema and queries
+├── src/                       # Core backend logic
+├── streamlit_app/             # Streamlit UI
+│   ├── aws_vertex_app.py
+│   └── components/
 ├── requirements.txt
 └── README.md
-```
-
----
-
-## 🏗️ System Architecture
-
-```
+🏗️ System Architecture
 User
  │
  ▼
 Streamlit Web App
  │
- ├── SageMaker (ML Models)
+ ├── AWS SageMaker (ML Models)
  ├── PostgreSQL (Structured Data)
  ├── JSON (Press / SEC Data)
  │
  ▼
-AI Agent (Vertex AI)
+Vertex AI Agent (LLM)
  │
  ▼
-Results Layer
-```
+Final Response Layer
+🌟 Key Highlights
 
----
+End-to-end AI system architecture
 
-## 🌟 Key Highlights
+Multi-cloud integration (AWS + GCP)
 
-* End-to-end AI system
-* Multi-cloud integration (AWS + GCP)
-* Real-time predictions via deployed models
-* Tool-based AI agent with data routing
-* Robust fallback handling for database failures
+Real-time predictions via deployed ML models
+
+Tool-based AI agent with intelligent routing
+
+Robust fallback handling for database failures

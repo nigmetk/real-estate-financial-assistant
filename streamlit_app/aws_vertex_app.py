@@ -7,6 +7,9 @@ import os
 import joblib
 import vertexai
 import boto3
+import os
+
+IS_CLOUD = os.getenv("STREAMLIT_SERVER_HEADLESS") == "true"
 
 from dotenv import load_dotenv
 
@@ -435,7 +438,7 @@ User question:
         # -----------------------------
         # TOOL CALL HANDLING
         # -----------------------------
-        if fn_call is not None:
+        if not IS_CLOUD and fn_call is not None:
 
             fn = fn_call.name
 

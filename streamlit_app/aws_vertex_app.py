@@ -204,6 +204,14 @@ agent_model = GenerativeModel(
 
 st.title("🏡 Real Estate Financial Assistant")
 
+# -----------------------------
+# MODE BADGE
+# -----------------------------
+if IS_PROD:
+    st.success("🟢 Production Mode — Full AI (Vertex AI + Tools)")
+else:
+    st.warning("🟡 Demo Mode — Simulated AI (Cloud Safe)")
+
 tab1, tab2, tab3 = st.tabs([
     "House Price Prediction",
     "Customer Subscription",
@@ -375,20 +383,33 @@ with tab2:
 # TAB 3 — AI CHATBOT
 # ----------------------------------------
 
+
 with tab3:
 
     st.header("AI Financial Assistant")
 
     # -----------------------------
+    # Chat memory
+    # -----------------------------
+    if "chat_history" not in st.session_state:
+        st.session_state.chat_history = []
+
+    # -----------------------------
     # Clear Chat Button
     # -----------------------------
     if st.button("Clear Chat"):
-        keys_to_keep = ["chat_input"]
-        for key in list(st.session_state.keys()):
-            if key not in keys_to_keep:
-                del st.session_state[key]
+        st.session_state.chat_history = []
         st.session_state["chat_input"] = ""
         st.rerun()
+
+    # -----------------------------
+    # Display chat history (ChatGPT UI)
+    # -----------------------------
+    for chat in st.session_state.chat_history:
+        with st.chat_message("user"):
+            st.write(chat["q"])
+        with st.chat_message("assistant"):
+            st.write(chat["a"])
 
     # -----------------------------
     # User Input
@@ -403,9 +424,11 @@ with tab3:
     # -----------------------------
     if st.button("Ask AI") and question:
 
-        routing = route_hint(question)
+        with st.spinner("AI is thinking..."):
 
-        prompt = f"""
+            routing = route_hint(question)
+
+            prompt = f"""
 You are a financial real estate assistant.
 
 Routing hint:
@@ -422,60 +445,76 @@ User question:
 {question}
 """
 
-        response = None
-        answer = ""
+            response = None
+            answer = ""
 
-        # -----------------------------
-        # PROD MODE (REAL LLM + TOOLS)
-        # -----------------------------
-        if IS_PROD:
-            try:
-                response = agent_model.generate_content(prompt)
-                if response and response.candidates:
-                    part = response.candidates[0].content.parts[0]
-                    if hasattr(part, "text"):
-                        answer = part.text
-            except Exception as e:
-                print("Vertex AI error:", e)
-                answer = "Error generating response from Vertex AI."
+            # -----------------------------
+            # PROD MODE (REAL LLM + TOOLS)
+            # -----------------------------
+            if IS_PROD:
+                try:
+                    response = agent_model.generate_content(prompt)
+                    if response and response.candidates:
+                        part = response.candidates[0].content.parts[0]
+                        if hasattr(part, "text"):
+                            answer = part.text
+                except Exception as e:
+                    answer = "Error generating response from Vertex AI."
 
-        # -----------------------------
-        # DEMO MODE (CLOUD SAFE ✅)
-        # -----------------------------
-        else:
-            q = question.lower()
-
-            # NET INCOME
-            if "net income" in q or "last quarter" in q:
-                answer = "The net income reported last quarter was approximately $450,000."
-
-            # CHICAGO INDUSTRIAL
-            elif "chicago" in q or "industrial" in q or "revenue" in q:
-                answer = (
-                    "Here are industrial properties in the Chicago region:\n"
-                    "- 123 Main St — Revenue: $1.2M, Net Income: $450k\n"
-                    "- 12 Warehouse Ln — Revenue: $1.8M, Net Income: $610k"
-                )
-
-            # PRESS / ACQUISITION
-            elif "acquisition" in q or "press" in q or "announcement" in q:
-                answer = (
-                    "Yes, the company recently announced an acquisition of a logistics "
-                    "facility to expand its industrial portfolio."
-                )
-
-            # DEFAULT
+            # -----------------------------
+            # DEMO MODE (CLOUD SAFE)
+            # -----------------------------
             else:
-                answer = (
-                    "This is a demo AI assistant. You can ask about financials, "
-                    "Chicago properties, or company announcements."
-                )
+                q = question.lower()
+                answers = []
+
+                # NET INCOME
+                if "net income" in q or "last quarter" in q:
+                    answers.append("The net income reported last quarter was approximately $450,000.")
+
+                # CHICAGO
+                if "chicago" in q or "industrial" in q or "revenue" in q:
+                    answers.append(
+                        "Chicago industrial properties:\n"
+                        "- 123 Main St — Revenue: $1.2M, Net Income: $450k\n"
+                        "- 12 Warehouse Ln — Revenue: $1.8M, Net Income: $610k"
+                    )
+
+                # PRESS
+                if "acquisition" in q or "press" in q or "announcement" in q:
+                    answers.append(
+                        "The company recently announced an acquisition of a logistics facility "
+                        "to expand its industrial portfolio."
+                    )
+
+                if not answers:
+                    answers.append(
+                        "This is a demo AI assistant. You can ask about financials, "
+                        "Chicago properties, or company announcements."
+                    )
+
+                answer = "\n\n".join(answers)
 
         # -----------------------------
-        # SHOW ANSWER
+        # Display current response
         # -----------------------------
-        st.subheader("AI Response")
-        st.write(answer)
+        with st.chat_message("user"):
+            st.write(question)
+
+        with st.chat_message("assistant"):
+            st.write(answer)
+
+            # Metric UI example
+            if "net income" in question.lower():
+                st.metric("Net Income (Last Quarter)", "$450,000")
+
+        # -----------------------------
+        # Save chat history
+        # -----------------------------
+        st.session_state.chat_history.append({
+            "q": question,
+            "a": answer
+        })
 
         # -----------------------------
         # TOOL CALL HANDLING (ONLY PROD)
@@ -493,6 +532,9 @@ User question:
 
                 fn = fn_call.name
 
+                # 🔧 TOOL LOG
+                st.info(f"🔧 Tool used: {fn}")
+
                 # Execute tool
                 if fn == "chicago_industrial_revenue_tool":
                     tool_result = chicago_industrial_revenue_tool()
@@ -504,6 +546,10 @@ User question:
                     tool_result = {"error": "Unknown tool called"}
 
                 wrapped_result = {"data": tool_result}
+
+                # Show tool output
+                with st.expander("🔍 Tool Execution Details"):
+                    st.json(wrapped_result)
 
                 try:
                     followup = agent_model.generate_content(
@@ -527,7 +573,8 @@ User question:
                         final_part = followup.candidates[0].content.parts[0]
 
                         if hasattr(final_part, "text"):
-                            st.write(final_part.text)
+                            with st.chat_message("assistant"):
+                                st.write(final_part.text)
 
                 except Exception as e:
                     st.error(f"Tool processing error: {e}")

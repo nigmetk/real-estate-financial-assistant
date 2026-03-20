@@ -52,6 +52,36 @@ Multi-source response generation
 
 Context-aware answers
 
+## ☁️ Demo vs Production Mode
+
+This application is designed with a dual-mode architecture to support both public deployment and full AI functionality.
+
+### 🔹 Demo Mode (Streamlit Cloud)
+
+* Runs without external AI credentials
+* Uses predefined financial data for responses
+* Ensures stable and secure cloud deployment
+
+### 🔹 Production Mode (Local / GCP)
+
+* Enables full **Vertex AI agent capabilities**
+* Supports **tool-based reasoning and data retrieval**
+* Connects to:
+
+  * PostgreSQL database
+  * SEC financial datasets
+  * Press release data
+
+### ⚙️ Configuration
+
+```bash
+IS_PROD=true   # Enable full AI (local)
+IS_PROD=false  # Demo mode (cloud)
+```
+
+> ⚠️ Note: Vertex AI is not enabled on Streamlit Cloud by default. Demo Mode is intentionally used for safe deployment.
+
+
 🧮 Machine Learning Models
 🔹 Regression Model
 

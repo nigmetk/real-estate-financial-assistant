@@ -207,10 +207,10 @@ st.title("🏡 Real Estate Financial Assistant")
 # -----------------------------
 # MODE BADGE
 # -----------------------------
-if IS_PROD:
-    st.success("🟢 Production Mode — Full AI (Vertex AI + Tools)")
-else:
-    st.warning("🟡 Demo Mode — Simulated AI (Cloud Safe)")
+#if IS_PROD:
+    #st.success("🟢 Production Mode — Full AI (Vertex AI + Tools)")
+#else:
+    #st.warning("🟡 Demo Mode — Simulated AI (Cloud Safe)")
 
 tab1, tab2, tab3 = st.tabs([
     "House Price Prediction",
